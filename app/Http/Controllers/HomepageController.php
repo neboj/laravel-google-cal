@@ -8,7 +8,15 @@ use Illuminate\Http\Request;
 class HomepageController extends Controller
 {
      function index(Request $request, OAuthService $OAuthService) {
-         return $this->ajax($request, $OAuthService);
+         $data = urldecode($request->getQueryString());
+         $data = substr_replace($data, "}", -1);
+         $data = json_decode($data);
+         $results = $OAuthService->createEvent($data);
+         if (empty($results)) {
+             return ['Api failed'];
+         } else {
+             return $results->getHtmlLink();
+         }
 //        $results = $OAuthService->createEvent($request);
 //        if (empty($results)) {
 //            return ['Failed in php'];

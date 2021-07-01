@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', [\App\Http\Controllers\HomepageController::class, 'index'])->name('home.index');
+Route::middleware(['cors'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\HomepageController::class, 'index'])->name('home.index');
+});
 Route::get('/ajax', [\App\Http\Controllers\HomepageController::class, 'ajax'])->name('home.ajax');
