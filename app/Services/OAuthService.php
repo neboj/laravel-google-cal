@@ -1,19 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
 
+use Google\Service\Calendar;
+use Google\Service\Calendar\Event;
 use Google_Client;
 use Google_Service_Calendar;
-use Illuminate\Http\Request;
 
-class SimpleApi extends Controller
+class OAuthService
 {
     /**
-     * Returns an authorized API client.
-     * @return Google_Client the authorized client object
+     * @var Google_Client
      */
-    private function getClient()
+    private $client;
+    /**
+     * @var Google_Service_Calendar
+     */
+    private $service;
+
+    /**
+     * @throws \Exception
+     */
+    public function __construct()
     {
+        $this->client = $this->getClient();
+        $this->service = new Google_Service_Calendar($this->client);
+    }
+
+    private function getClient(){
+        // Get the API client and construct the service object.
         $client = new Google_Client();
         $client->setApplicationName('Google Calendar API PHP Quickstart');
         $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
@@ -61,12 +76,8 @@ class SimpleApi extends Controller
         return $client;
     }
 
-
-    function getData() {
-       // Get the API client and construct the service object.
-        $client = $this->getClient();
-        $service = new Google_Service_Calendar($client);
-
+    public function listEvents()
+    {
         // Print the next 10 events on the user's calendar.
         $calendarId = 'primary';
         $optParams = array(
@@ -75,7 +86,7 @@ class SimpleApi extends Controller
             'singleEvents' => true,
             'timeMin' => date('c'),
         );
-        $results = $service->events->listEvents($calendarId, $optParams);
+        $results = $this->service->events->listEvents($calendarId, $optParams);
         $events = $results->getItems();
 
         if (empty($events)) {
@@ -90,6 +101,55 @@ class SimpleApi extends Controller
                 printf("%s (%s)\n", $event->getSummary(), $start);
             }
         }
-        return ['name' => "OKKK"];
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function createEvent($data){
+        $calendarId = 'primary';
+
+        $optParams = [
+            'sendNotifications' => true,
+            'sendUpdates' => 'all'
+        ];
+        $attendee = new Calendar\EventAttendee();
+        $attendee->setEmail($data->attendees[0]->email);
+
+        $event = new Event();
+        $event->attendees = [$attendee];
+        $event->setSummary($data->summary);
+        $event->setDescription($data->description);
+
+        $startMeetingDate = new Calendar\EventDateTime();
+        $startMeetingDate->setTimeZone($data->start->timeZone);
+        $startMeetingDate->setDateTime((new \DateTime($data->start->dateTime,new \DateTimeZone($data->start->timeZone)))->format(\DateTime::RFC3339));
+
+        $endMeetingDate = new Calendar\EventDateTime();
+        $endMeetingDate->setTimeZone($data->end->timeZone);
+        $endMeetingDate->setDateTime((new \DateTime($data->end->dateTime,new \DateTimeZone($data->end->timeZone)))->format(\DateTime::RFC3339));
+
+        $event->setStart($startMeetingDate);
+        $event->setEnd($endMeetingDate);
+
+        $reminder = new Calendar\EventReminder();
+        $reminder->setMethod('email');
+        $reminder->setMinutes(30);
+        $reminder2 = new Calendar\EventReminder();
+        $reminder2->setMethod('email');
+        $reminder2->setMinutes(15);
+
+        $reminders = new Calendar\EventReminders();
+        $reminders->setUseDefault(false);
+        $reminders->setOverrides([$reminder, $reminder2]);
+
+
+        $event->setReminders($reminders);
+
+        $results = $this->service->events->insert($calendarId, $event , $optParams);
+
+//        print_r($results);
+        return $results;
+    }
+
 }
