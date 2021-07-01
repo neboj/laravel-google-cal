@@ -21,6 +21,47 @@
         </style>
     </head>
     <body class="antialiased">
+    <script>
+        function sendAjax(){
+            var event = {
+                'summary': "Nebo Kozlo" + " " + "065182392",
+                // 'location': '800 Howard St., San Francisco, CA 94103',
+                'description': "Dodji dodji",
+                'params': {
+                    'sendNotifications': true
+                },
+                'start': {
+                    'dateTime': '2021-07-02T10:00:59.177Z',
+                    'timeZone': 'Europe/Belgrade'
+                },
+                'end': {
+                    'dateTime': '2021-07-02T10:00:59.177Z',
+                    'timeZone': 'Europe/Belgrade'
+                },
+                'attendees': [
+                    {'email': 'nebojsa.kozlovacki@gmail.com'},
+                ],
+            };
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        console.log(this.responseText);
+                        var el = document.getElementById('ajaxResponse');
+                        el.innerText = this.responseText;
+                    } else {
+                        console.log('Failed async call');
+                    }
+                }
+            };
+            const data = JSON.stringify(event);
+            xmlhttp.open("GET", `ajax?${data}`);
+            xmlhttp.send();
+        }
+    </script>
+    <button onclick="sendAjax()"> OVDE </button>
+    <span id="ajaxResponse"></span>
         <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
             @if (Route::has('login'))
                 <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
