@@ -17,4 +17,3 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['cors'])->group(function () {
     Route::get('/', [\App\Http\Controllers\HomepageController::class, 'index'])->name('home.index');
 });
-Route::get('/ajax', [\App\Http\Controllers\HomepageController::class, 'ajax'])->name('home.ajax');
