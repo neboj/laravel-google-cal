@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class HomepageController extends Controller
 {
      function index(Request $request, OAuthService $OAuthService) {
+         return $this->ajax($request, $OAuthService);
 //        $results = $OAuthService->createEvent($request);
 //        if (empty($results)) {
 //            return ['Failed in php'];
